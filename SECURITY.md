@@ -19,6 +19,12 @@ At this time, only the latest version of Common Hosted Form Service is supported
 ## Reporting a Bug
 
 The `CSS` team and community take all security bugs in `CHEFS` seriously.
+|  1.3.x  | :white_check_mark: |
+|  < 1.3  | :x:                |
+
+## Reporting a Bug
+
+The `Forminators` team and community take all security bugs in `CHEFS` seriously.
 Thank you for improving the security of `CHEFS`. We appreciate your efforts and
 responsible disclosure and will make every effort to acknowledge your
 contributions.
@@ -26,6 +32,9 @@ contributions.
 Report security bugs by sending an email to <NR.CommonServiceShowcase@gov.bc.ca>.
 
 The `CSS` team will acknowledge your email within 48 hours, and will send a
+Report security bugs by sending an email to <submit.digital@gov.bc.ca>.
+
+The `Forminators` team will acknowledge your email within 48 hours, and will send a
 more detailed response within 48 hours indicating the next steps in handling
 your report. After the initial reply to your report, the security team will
 endeavor to keep you informed of the progress towards a fix and full

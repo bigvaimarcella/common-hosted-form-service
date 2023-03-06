@@ -23,6 +23,10 @@
 - [ ] I have checked that unit tests pass locally with my changes
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] I have added necessary documentation (if appropriate)
+- [ ] I have run the npm script lint on the frontend and backend
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] I have added necessary documentation (if appropriate)
+- [ ] I have approval from the product owner for the contribution in this pull request
 
 ## Further comments
 

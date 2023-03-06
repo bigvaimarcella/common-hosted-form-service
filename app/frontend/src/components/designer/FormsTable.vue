@@ -49,6 +49,7 @@
     >
       <template #[`item.name`]="{ item }">
         <router-link
+          v-if="item.published"
           :to="{
             name: 'FormSubmit',
             query: { f: item.id },
@@ -59,16 +60,14 @@
             <template #activator="{ on, attrs }">
               <span v-bind="attrs" v-on="on">{{ item.name }}</span>
             </template>
-            <span>
+            <span v-if="item.published">
               View Form
               <v-icon>open_in_new</v-icon>
             </span>
           </v-tooltip>
         </router-link>
-        <!-- link to description in dialog -->
-        <v-icon
-          v-if="item.description.trim()"
-          @click="onDescriptionClick(item.id, item.description)"
+        <span v-else>{{ item.name }}</span>
+        <v-icon v-if="item.description.trim()"
           small
           class="description-icon ml-2 mr-4"
           color="primary"
@@ -87,6 +86,7 @@
           </v-btn>
         </router-link>
         <router-link
+          data-cy="formSubmissionsLink"
           v-if="checkSubmissionView(item)"
           :to="{ name: 'FormSubmissions', query: { f: item.id } }"
         >

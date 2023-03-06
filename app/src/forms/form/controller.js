@@ -113,7 +113,7 @@ module.exports = {
   },
   listSubmissions: async (req, res, next) => {
     try {
-      const response = await service.listSubmissions(req.params.formVersionId);
+      const response = await service.listSubmissions(req.params.formVersionId, req.query);
       res.status(200).json(response);
     } catch (error) {
       next(error);
@@ -231,6 +231,22 @@ module.exports = {
       const response = await service.deleteApiKey(req.params.formId);
       res.status(204).json(response);
     } catch (error) {
+      next(error);
+    }
+  },
+  getFCProactiveHelpImageUrl:async(req, res, next)=> {
+    try{
+      const response = await service.getFCProactiveHelpImageUrl(req.params.componentId);
+      res.status(200).send(response);
+    } catch(error){
+      next(error);
+    }
+  },
+  listFormComponentsProactiveHelp:async(req,res,next)=> {
+    try{
+      const response = await service.listFormComponentsProactiveHelp();
+      res.status(200).json(response);
+    } catch(error){
       next(error);
     }
   },

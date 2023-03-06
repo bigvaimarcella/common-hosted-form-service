@@ -23,7 +23,6 @@ export default {
    * @returns {Promise} An axios response
    */
   createForm(formData) {
-    //console.log(formData);
     return appAxios().post(`${ApiRoutes.FORMS}`, formData);
   },
 
@@ -239,6 +238,17 @@ export default {
   },
 
   /**
+   * @function restoreSubmission
+   * Restores an existing submission
+   * @param {string} submissionId The form uuid
+   * @param {Object} requestBody The form data for the submission
+   * @returns {Promise} An axios response
+   */
+  restoreSubmission(submissionId, requestBody) {
+    return appAxios().put(`${ApiRoutes.SUBMISSION}/${submissionId}/restore`, requestBody);
+  },
+
+  /**
    * @function updateSubmission
    * Update an existing submission
    * @param {string} submissionId The form uuid
@@ -294,16 +304,20 @@ export default {
    * @function exportSubmissions
    * Get the export file for a range of form submittions
    * @param {string} formId The form uuid
+   * @param {Array} preference selected fields by the user
    * @param {string} format The export file format csv or json
    * @param {object} options options for the export (eg: minDate, maxDate, deleted, drafts)
    * @returns {Promise} An axios response
    */
-  exportSubmissions(formId, format, options = {}) {
+  exportSubmissions(formId, format,template,versionSelected, preference, options = {}) {
     return appAxios().get(`${ApiRoutes.FORMS}/${formId}/export`,
       {
         params: {
           format: format,
+          template:template,
+          version:versionSelected,
           type: 'submissions',
+          preference:preference,
           ...options
         },
         responseType: 'blob'
@@ -385,5 +399,26 @@ export default {
   */
   requestReceiptEmail(submissionId, requestBody) {
     return appAxios().post(`${ApiRoutes.SUBMISSION}/${submissionId}/email`, requestBody);
+  },
+
+  /**
+   * listFormComponentsProactiveHelp
+   * @function listFCProactiveHelp
+   * Reads all form components help information
+   * @returns {Promise} An axios response
+  */
+  async listFCProactiveHelp() {
+    return await appAxios().get(`${ApiRoutes.FORMS}/formcomponents/proactivehelp/list`);
+  },
+
+
+  /**
+   * @function getPresignedUrl
+   * get signed image upload url
+   * @param {Object} imageName component name and component image encoded into base64
+   * @returns {Promise} An axios response
+  */
+  async getFCProactiveHelpImageUrl(componentId) {
+    return appAxios().get(`${ApiRoutes.FORMS}/formcomponents/proactivehelp/imageUrl/${componentId}`);
   },
 };

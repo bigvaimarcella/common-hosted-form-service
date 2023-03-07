@@ -26,8 +26,8 @@ export default {
     userList: state => state.userList,
   },
   mutations: {
-    SET_API_KEY(state, apiKey) {
-    },
+    // SET_API_KEY(state, apiKey) {
+    // },
     SET_FORM(state, form) {
       state.form = form;
     },
@@ -229,8 +229,7 @@ export default {
         }, { root: true });
       }
     },
-
-
+    
     //listFormComponentsProactiveHelp
     async listFCProactiveHelp({ commit, dispatch }) {
       try {

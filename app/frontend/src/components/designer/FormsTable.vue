@@ -67,11 +67,7 @@
           </v-tooltip>
         </router-link>
         <span v-else>{{ item.name }}</span>
-        <v-icon v-if="item.description.trim()"
-          small
-          class="description-icon ml-2 mr-4"
-          color="primary"
-        >
+        <v-icon v-if="item.description.trim()" small class="description-icon ml-2 mr-4" color="primary" >
           description
         </v-icon>
       </template>

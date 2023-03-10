@@ -426,7 +426,7 @@ const service = {
             ...recordWithoutData.submission,
             data:singleData
           }
-        })
+        });
       });
 
       const result = await FormSubmission.query(trx).insert(recordsToInsert);

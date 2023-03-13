@@ -32,9 +32,6 @@ inputs:
     description: Route Subpath Mount point
     required: true
     default: "/app"
-  server_host:
-    description: Hostname the end users supose to use to access the app
-    required: true
 
 runs:
   using: composite

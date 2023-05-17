@@ -10,7 +10,14 @@
         <v-col class="text-right" cols="12" sm="6" order="1" order-sm="2">
           <v-tooltip bottom>
             <template #activator="{ on, attrs }">
-              <v-btn @click="showColumnsDialog = true" class="mx-1" color="primary" icon v-bind="attrs" v-on="on">
+              <v-btn
+                @click="showColumnsDialog = true"
+                class="mx-1"
+                color="primary"
+                icon
+                v-bind="attrs"
+                v-on="on"
+              >
                 <v-icon>view_column</v-icon>
               </v-btn>
             </template>
@@ -24,7 +31,13 @@
                   query: { f: form.id },
                 }"
               >
-                <v-btn class="mx-1" color="primary" icon v-bind="attrs" v-on="on">
+                <v-btn
+                  class="mx-1"
+                  color="primary"
+                  icon
+                  v-bind="attrs"
+                  v-on="on"
+                >
                   <v-icon>add_circle</v-icon>
                 </v-btn>
               </router-link>
@@ -44,7 +57,14 @@
       <v-col cols="12" sm="4">
         <!-- search input -->
         <div class="submissions-search">
-          <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details class="pb-5" />
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+            class="pb-5"
+          />
         </div>
       </v-col>
     </v-row>
@@ -60,21 +80,23 @@
       no-data-text="You have no submissions"
     >
       <template #[`item.lastEdited`]="{ item }">
-        {{ item.lastEdited | formatDateLong(false) }}
+        {{ item.lastEdited | formatDateLong }}
       </template>
       <template #[`item.submittedDate`]="{ item }">
-        {{ item.submittedDate | formatDateLong(false) }}
+        {{ item.submittedDate | formatDateLong }}
       </template>
 
       <template #[`item.completedDate`]="{ item }">
-        {{ item.completedDate | formatDateLong(false) }}
+        {{ item.completedDate | formatDateLong }}
       </template>
       <template #[`item.actions`]="{ item }">
         <MySubmissionsActions
           @draft-deleted="populateSubmissionsTable"
           :submission="item"
           :formId="formId"
-          :isCopyFromExistingSubmissionEnabled="isCopyFromExistingSubmissionEnabled"
+          :isCopyFromExistingSubmissionEnabled="
+            isCopyFromExistingSubmissionEnabled
+          "
         />
       </template>
     </v-data-table>
@@ -83,11 +105,18 @@
         inputFilterPlaceholder="Search submission fields"
         inputItemKey="value"
         inputSaveButtonText="Save"
-        :inputData="DEFAULT_HEADERS.filter((h) => !filterIgnore.some((fd) => fd.value === h.value))"
+        :inputData="
+          DEFAULT_HEADERS.filter(
+            (h) => !filterIgnore.some((fd) => fd.value === h.value)
+          )
+        "
+        :preselectedData="PRESELECTED_DATA"
         @saving-filter-data="updateFilter"
         @cancel-filter-data="showColumnsDialog = false"
       >
-        <template #filter-title>Search and select columns to show under your dashboard</template>
+        <template #filter-title
+          >Search and select columns to show under your dashboard</template
+        >
       </BaseFilter>
     </v-dialog>
   </div>
@@ -169,6 +198,12 @@ export default {
       ];
       if (this.showDraftLastEdited || !this.formId) {
         headers.splice(headers.length - 1, 0, {
+          text: 'Draft Updated By',
+          align: 'start',
+          value: 'updatedBy',
+          sortable: true,
+        });
+        headers.splice(headers.length - 1, 0, {
           text: 'Draft Last Edited',
           align: 'start',
           value: 'lastEdited',
@@ -180,8 +215,17 @@ export default {
     HEADERS() {
       let headers = this.DEFAULT_HEADERS;
       if (this.filterData.length > 0)
-        headers = headers.filter((h) => this.filterData.some((fd) => fd.value === h.value) || this.filterIgnore.some((ign) => ign.value === h.value));
+        headers = headers.filter(
+          (h) =>
+            this.filterData.some((fd) => fd.value === h.value) ||
+            this.filterIgnore.some((ign) => ign.value === h.value)
+        );
       return headers;
+    },
+    PRESELECTED_DATA() {
+      return this.DEFAULT_HEADERS.filter(
+        (h) => !this.filterIgnore.some((fd) => fd.value === h.value)
+      );
     },
     showStatus() {
       return this.form && this.form.enableStatusUpdates;
@@ -198,8 +242,12 @@ export default {
 
     // Status columns in the table
     getCurrentStatus(record) {
-      // Current status is most recent status (top in array, query returns in status created desc)
-      const status = record.submissionStatus && record.submissionStatus[0] ? record.submissionStatus[0].code : 'N/A';
+      // Current status is most recent status (top in array, query returns in
+      // status created desc)
+      const status =
+        record.submissionStatus && record.submissionStatus[0]
+          ? record.submissionStatus[0].code
+          : 'N/A';
       if (record.draft && status !== 'REVISING') {
         return 'DRAFT';
       } else {
@@ -209,7 +257,9 @@ export default {
     getStatusDate(record, statusCode) {
       // Get the created date of the most recent occurence of a specified status
       if (record.submissionStatus) {
-        const submittedStatus = record.submissionStatus.find((stat) => stat.code === statusCode);
+        const submittedStatus = record.submissionStatus.find(
+          (stat) => stat.code === statusCode
+        );
         if (submittedStatus) return submittedStatus.createdAt;
       }
       return '';
@@ -224,14 +274,18 @@ export default {
         const tableRows = this.submissionList.map((s) => {
           return {
             confirmationId: s.confirmationId,
-            lastEdited: s.draft ? s.updatedAt : undefined,
             name: s.name,
             permissions: s.permissions,
             status: this.getCurrentStatus(s),
             submissionId: s.formSubmissionId,
             submittedDate: this.getStatusDate(s, 'SUBMITTED'),
             createdBy: s.submission.createdBy,
-            username: s.submissionStatus && s.submissionStatus.length > 0 ? s.submissionStatus[0].createdBy : '',
+            updatedBy: s.draft ? s.submission.updatedBy : undefined,
+            lastEdited: s.draft ? s.submission.updatedAt : undefined,
+            username:
+              s.submissionStatus && s.submissionStatus.length > 0
+                ? s.submissionStatus[0].createdBy
+                : '',
           };
         });
         this.submissionTable = tableRows;

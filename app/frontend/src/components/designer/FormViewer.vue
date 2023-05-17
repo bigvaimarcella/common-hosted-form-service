@@ -32,7 +32,10 @@
               :submissionId="submissionId"
               :allowSubmitterToUploadFile="allowSubmitterToUploadFile"
               :bulkFile="bulkFile"
-              @showdoYouWantToSaveTheDraftModal="showdoYouWantToSaveTheDraftModal"
+              :copyExistingSubmission="form.enableCopyExistingSubmission"
+              @showdoYouWantToSaveTheDraftModal="
+                showdoYouWantToSaveTheDraftModal
+              "
               @save-draft="saveDraft"
               @switchView="switchView"
             />
@@ -43,9 +46,21 @@
           <v-alert
             class="mt-2 mb-2"
             :value="saved || saving"
-            :class="saving ? NOTIFICATIONS_TYPES.INFO.class : NOTIFICATIONS_TYPES.SUCCESS.class"
-            :color="saving ? NOTIFICATIONS_TYPES.INFO.color : NOTIFICATIONS_TYPES.SUCCESS.color"
-            :icon="saving ? NOTIFICATIONS_TYPES.INFO.icon : NOTIFICATIONS_TYPES.SUCCESS.icon"
+            :class="
+              saving
+                ? NOTIFICATIONS_TYPES.INFO.class
+                : NOTIFICATIONS_TYPES.SUCCESS.class
+            "
+            :color="
+              saving
+                ? NOTIFICATIONS_TYPES.INFO.color
+                : NOTIFICATIONS_TYPES.SUCCESS.color
+            "
+            :icon="
+              saving
+                ? NOTIFICATIONS_TYPES.INFO.icon
+                : NOTIFICATIONS_TYPES.SUCCESS.icon
+            "
             transition="scale-transition"
           >
             <div v-if="saving">
@@ -65,7 +80,9 @@
             @continue-dialog="continueSubmit"
           >
             <template #title>Please Confirm</template>
-            <template #text>Are you sure you wish to submit your form?</template>
+            <template #text
+              >Are you sure you wish to submit your form?</template
+            >
             <template #button-text-continue>
               <span>Submit</span>
             </template>
@@ -80,7 +97,11 @@
             transition="scale-transition"
           >
             <div color="info" icon="$info">
-              <v-progress-linear :indeterminate="true" color="blue-grey lighten-4" height="5"></v-progress-linear>
+              <v-progress-linear
+                :indeterminate="true"
+                color="blue-grey lighten-4"
+                height="5"
+              ></v-progress-linear>
               Please wait while the form is loading !!!
             </div>
           </v-alert>
@@ -103,18 +124,22 @@
             :form="formSchema"
             :key="reRenderFormIo"
             :submission="submission"
+            :options="viewerOptions"
             @submit="onSubmit"
             @submitDone="onSubmitDone"
             @submitButton="onSubmitButton"
             @customEvent="onCustomEvent"
             @change="formChange"
-            :options="viewerOptions"
             @render="onFormRender"
           />
           <p v-if="version" class="text-right">Version: {{ version }}</p>
         </div>
       </div>
-      <YesOrNoDialog :doYouWantToSaveTheDraft="doYouWantToSaveTheDraft" @save-draft="saveDraftFromModal" @close-bulk-yes-or-no="closeBulkYesOrNo" />
+      <YesOrNoDialog
+        :doYouWantToSaveTheDraft="doYouWantToSaveTheDraft"
+        @save-draft="saveDraftFromModal"
+        @close-bulk-yes-or-no="closeBulkYesOrNo"
+      />
     </v-skeleton-loader>
   </div>
 </template>
@@ -206,7 +231,8 @@ export default {
       block: false,
       doYouWantToSaveTheDraft: false,
       isFormScheduleExpired: false,
-      formScheduleExpireMessage: 'Form submission is not available as the scheduled submission period has expired.',
+      formScheduleExpireMessage:
+        'Form submission is not available as the scheduled submission period has expired.',
       isLateSubmissionAllowed: false,
       saveDraftState: 0,
       formDataEntered: false,
@@ -243,7 +269,10 @@ export default {
       };
     },
     canSaveDraft() {
-      return !this.readOnly && this.permissions.includes(FormPermissions.SUBMISSION_UPDATE);
+      return (
+        !this.readOnly &&
+        this.permissions.includes(FormPermissions.SUBMISSION_UPDATE)
+      );
     },
   },
   methods: {
@@ -262,7 +291,12 @@ export default {
         //Get property path from nested object
         for (let property in obj) {
           if (typeof obj[property] == 'object') {
-            return iterate(obj[property], stack + '.' + property, fields, propNeeded);
+            return iterate(
+              obj[property],
+              stack + '.' + property,
+              fields,
+              propNeeded
+            );
           } else if (propNeeded === property) {
             fields = fields + stack + '.' + property;
             return fields;
@@ -271,13 +305,18 @@ export default {
       }
 
       function deleteFieldData(fieldcomponent, submission) {
-        if (Object.prototype.hasOwnProperty.call(fieldcomponent, 'components')) {
+        if (
+          Object.prototype.hasOwnProperty.call(fieldcomponent, 'components')
+        ) {
           fieldcomponent.components.map((subComponent) => {
             // Check if it's a Nested component
             deleteFieldData(subComponent, submission);
           });
         } else if (!fieldcomponent?.validate?.isUseForCopy) {
-          _.unset(submission, iterate(submission, '', '', fieldcomponent.key).replace(/^\./, ''));
+          _.unset(
+            submission,
+            iterate(submission, '', '', fieldcomponent.key).replace(/^\./, '')
+          );
         }
       }
 
@@ -293,7 +332,10 @@ export default {
           this.version = response.data.version.version;
         } else {
           /** Let's remove all the values of such components that are not enabled for Copy existing submission feature */
-          if (response.data?.version?.schema?.components && response.data?.version?.schema?.components.length) {
+          if (
+            response.data?.version?.schema?.components &&
+            response.data?.version?.schema?.components.length
+          ) {
             response.data.version.schema.components.map((component) => {
               deleteFieldData(component, this.submission); //Delete all the fields data that are not enabled for duplication
             });
@@ -324,7 +366,9 @@ export default {
           // If getting for a specific older version of the form
           response = await formService.readVersion(this.formId, this.versionId);
           if (!response.data || !response.data.schema) {
-            throw new Error(`No schema in response. VersionId: ${this.versionId}`);
+            throw new Error(
+              `No schema in response. VersionId: ${this.versionId}`
+            );
           }
           this.form = response.data;
           this.formSchema = response.data.schema;
@@ -339,8 +383,20 @@ export default {
         } else {
           // If getting the HEAD form version (IE making a new submission)
           response = await formService.readPublished(this.formId);
-          if (!response.data || !response.data.versions || !response.data.versions[0]) {
-            throw new Error(`No published version found in response. FormID: ${this.formId}`);
+          if (
+            !response.data ||
+            !response.data.versions ||
+            !response.data.versions[0]
+          ) {
+            this.$router.push({
+              name: 'Alert',
+              params: {
+                message:
+                  'The form owner has not published the form, and it is not available for submissions.',
+                type: 'info',
+              },
+            });
+            return;
           }
 
           this.form = response.data;
@@ -350,7 +406,8 @@ export default {
           if (response.data.schedule && response.data.schedule.expire) {
             let formScheduleStatus = response.data.schedule;
             this.isFormScheduleExpired = formScheduleStatus.expire;
-            this.isLateSubmissionAllowed = formScheduleStatus.allowLateSubmissions;
+            this.isLateSubmissionAllowed =
+              formScheduleStatus.allowLateSubmissions;
             this.formScheduleExpireMessage = formScheduleStatus.message;
           }
         }
@@ -359,7 +416,7 @@ export default {
         if (this.authenticated) {
           this.isFormScheduleExpired = true;
           this.isLateSubmissionAllowed = false;
-          this.formScheduleExpireMessage = 'An error occurred fetching this form';
+          this.formScheduleExpireMessage = error.message;
           this.addNotification({
             message: 'An error occurred fetching this form',
             consoleError: `Error loading form schema ${this.versionId}: ${error}`,
@@ -368,7 +425,8 @@ export default {
       }
     },
     async listenFormChangeEvent(response) {
-      this.allowSubmitterToUploadFile = response.data.allowSubmitterToUploadFile;
+      this.allowSubmitterToUploadFile =
+        response.data.allowSubmitterToUploadFile;
       if (this.allowSubmitterToUploadFile && !this.draftId) this.jsonManager();
     },
     formChange(e) {
@@ -400,11 +458,16 @@ export default {
     async sendMultiSubmissionData(body) {
       try {
         this.saving = true;
-        let response = await formService.createMultiSubmission(this.formId, this.versionIdToSubmitTo, body);
+        let response = await formService.createMultiSubmission(
+          this.formId,
+          this.versionIdToSubmitTo,
+          body
+        );
         if ([200, 201].includes(response.status)) {
           // all is good, flag no errors and carry on...
           // store our submission result...
-          this.sbdMessage.message = 'Your multiple draft upload has been successful!';
+          this.sbdMessage.message =
+            'Your multiple draft upload has been successful!';
           this.sbdMessage.error = false;
           this.sbdMessage.upload_state = 10;
           this.sbdMessage.response = [];
@@ -420,10 +483,15 @@ export default {
           this.sbdMessage.error = true;
           this.sbdMessage.upload_state = 10;
           this.block = false;
-          this.sbdMessage.response = [{ error_message: 'An error occurred submitting this form' }];
-          this.sbdMessage.file_name = 'error_report_' + this.form.name + '_' + Date.now();
+          this.sbdMessage.response = [
+            { error_message: 'An error occurred submitting this form' },
+          ];
+          this.sbdMessage.file_name =
+            'error_report_' + this.form.name + '_' + Date.now();
           this.saving = false;
-          throw new Error(`Failed response from submission endpoint. Response code: ${response.status}`);
+          throw new Error(
+            `Failed response from submission endpoint. Response code: ${response.status}`
+          );
         }
       } catch (error) {
         this.saving = false;
@@ -438,27 +506,37 @@ export default {
     async setFinalError(error) {
       try {
         if (error.response.data != undefined) {
-          this.sbdMessage.message = error.response.data.title == undefined ? 'An error occurred submitting this form' : error.response.data.title;
+          this.sbdMessage.message =
+            error.response.data.title == undefined
+              ? 'An error occurred submitting this form'
+              : error.response.data.title;
           this.sbdMessage.error = true;
           this.sbdMessage.upload_state = 10;
           this.sbdMessage.response =
             error.response.data.reports == undefined
               ? [{ error_message: 'An error occurred submitting this form' }]
               : await this.formatResponse(error.response.data.reports);
-          this.sbdMessage.file_name = 'error_report_' + this.form.name + '_' + Date.now();
+          this.sbdMessage.file_name =
+            'error_report_' + this.form.name + '_' + Date.now();
         } else {
           this.sbdMessage.message = 'An error occurred submitting this form';
           this.sbdMessage.error = true;
           this.sbdMessage.upload_state = 10;
-          this.sbdMessage.response = [{ error_message: 'An error occurred submitting this form' }];
-          this.sbdMessage.file_name = 'error_report_' + this.form.name + '_' + Date.now();
+          this.sbdMessage.response = [
+            { error_message: 'An error occurred submitting this form' },
+          ];
+          this.sbdMessage.file_name =
+            'error_report_' + this.form.name + '_' + Date.now();
         }
       } catch (error_2) {
         this.sbdMessage.message = 'An error occurred submitting this form';
         this.sbdMessage.error = true;
         this.sbdMessage.upload_state = 10;
-        this.sbdMessage.response = [{ error_message: 'An error occurred submitting this form' }];
-        this.sbdMessage.file_name = 'error_report_' + this.form.name + '_' + Date.now();
+        this.sbdMessage.response = [
+          { error_message: 'An error occurred submitting this form' },
+        ];
+        this.sbdMessage.file_name =
+          'error_report_' + this.form.name + '_' + Date.now();
       }
     },
     async formatResponse(response) {
@@ -530,7 +608,10 @@ export default {
     },
     async sendSubmission(isDraft, submission) {
       submission.data.lateEntry =
-        this.form?.schedule?.expire !== undefined && this.form.schedule.expire === true ? this.form.schedule.allowLateSubmissions : false;
+        this.form?.schedule?.expire !== undefined &&
+        this.form.schedule.expire === true
+          ? this.form.schedule.allowLateSubmissions
+          : false;
       const body = {
         draft: isDraft,
         submission: submission,
@@ -543,7 +624,11 @@ export default {
         response = await formService.updateSubmission(this.submissionId, body);
       } else {
         // Adding a new submission
-        response = await formService.createSubmission(this.formId, this.versionIdToSubmitTo, body);
+        response = await formService.createSubmission(
+          this.formId,
+          this.versionIdToSubmitTo,
+          body
+        );
       }
       return response;
     },
@@ -657,7 +742,9 @@ export default {
               : response.data
           );
         } else {
-          throw new Error(`Failed response from submission endpoint. Response code: ${response.status}`);
+          throw new Error(
+            `Failed response from submission endpoint. Response code: ${response.status}`
+          );
         }
       } catch (error) {
         errMsg = 'An error occurred submitting this form';
@@ -685,7 +772,9 @@ export default {
     },
 
     onCustomEvent(event) {
-      alert(`Custom button events not supported yet. Event Type: ${event.type}`);
+      alert(
+        `Custom button events not supported yet. Event Type: ${event.type}`
+      );
     },
     switchView() {
       if (!this.bulkFile) {
@@ -705,7 +794,8 @@ export default {
     showdoYouWantToSaveTheDraftModal() {
       if (!this.bulkFile) {
         this.saveDraftState = 0;
-        if (this.submissionId == undefined || this.formDataEntered) this.doYouWantToSaveTheDraft = true;
+        if (this.submissionId == undefined || this.formDataEntered)
+          this.doYouWantToSaveTheDraft = true;
         else this.leaveThisPage();
       } else {
         this.leaveThisPage();

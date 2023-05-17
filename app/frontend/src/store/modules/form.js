@@ -1,6 +1,12 @@
 import { getField, updateField } from 'vuex-map-fields';
 import { IdentityMode, NotificationTypes } from '@/utils/constants';
-import { apiKeyService, formService, rbacService, userService } from '@/services';
+import {
+  apiKeyService,
+  formService,
+  fileService,
+  rbacService,
+  userService,
+} from '@/services';
 import { generateIdps, parseIdps } from '@/utils/transformUtils';
 
 const genInitialSchedule = () => ({
@@ -74,6 +80,10 @@ export default {
     fcProactiveHelpGroupList: {},
     imageList: new Map(),
     fcProactiveHelpImageUrl: '',
+    downloadedFile: {
+      data: null,
+      headers: null,
+    },
   },
   getters: {
     getField, // vuex-map-fields
@@ -93,6 +103,7 @@ export default {
     builder: (state) => state.builder,
     fcProactiveHelpGroupList: (state) => state.fcProactiveHelpGroupList,
     fcProactiveHelpImageUrl: (state) => state.fcProactiveHelpImageUrl,
+    downloadedFile: (state) => state.downloadedFile,
   },
   mutations: {
     updateField, // vuex-map-fields
@@ -148,6 +159,12 @@ export default {
     SET_FCPROACTIVEHELPIMAGEURL(state, fcProactiveHelpImageUrl) {
       state.fcProactiveHelpImageUrl = fcProactiveHelpImageUrl;
     },
+    SET_DOWNLOADEDFILE_DATA(state, downloadedFile) {
+      state.downloadedFile.data = downloadedFile;
+    },
+    SET_DOWNLOADEDFILE_HEADERS(state, headers) {
+      state.downloadedFile.headers = headers;
+    },
   },
   actions: {
     //
@@ -196,7 +213,8 @@ export default {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while fetching your user data for this form.',
+            message:
+              'An error occurred while fetching your user data for this form.',
             consoleError: `Error getting user data using formID ${formId}: ${error}`,
           },
           { root: true }
@@ -218,7 +236,8 @@ export default {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while fetching your user data for this form.',
+            message:
+              'An error occurred while fetching your user data for this form.',
             consoleError: `Error getting user data using formID ${formId}: ${error}`,
           },
           { root: true }
@@ -233,22 +252,30 @@ export default {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while fetching your preferences for this form.',
+            message:
+              'An error occurred while fetching your preferences for this form.',
             consoleError: `Error getting user form prefs using formID ${formId}: ${error}`,
           },
           { root: true }
         );
       }
     },
-    async updateFormPreferencesForCurrentUser({ commit, dispatch }, { formId, preferences }) {
+    async updateFormPreferencesForCurrentUser(
+      { commit, dispatch },
+      { formId, preferences }
+    ) {
       try {
-        const response = await userService.updateUserFormPreferences(formId, preferences);
+        const response = await userService.updateUserFormPreferences(
+          formId,
+          preferences
+        );
         commit('SET_USER_FORM_PREFERENCES', response.data);
       } catch (error) {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while saving your preferences for this form.',
+            message:
+              'An error occurred while saving your preferences for this form.',
             consoleError: `Error updating user form prefs using formID ${formId}, and prefs ${preferences}: ${error}`,
           },
           { root: true }
@@ -304,7 +331,8 @@ export default {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while scanning for drafts for this form.',
+            message:
+              'An error occurred while scanning for drafts for this form.',
             consoleError: `Error getting drafts for form ${formId}: ${error}`,
           },
           { root: true }
@@ -319,7 +347,8 @@ export default {
         const identityProviders = parseIdps(data.identityProviders);
         data.idps = identityProviders.idps;
         data.userType = identityProviders.userType;
-        data.sendSubRecieviedEmail = data.submissionReceivedEmails && data.submissionReceivedEmails.length;
+        data.sendSubRecieviedEmail =
+          data.submissionReceivedEmails && data.submissionReceivedEmails.length;
         data.schedule = {
           ...genInitialSchedule(),
           ...data.schedule,
@@ -340,13 +369,17 @@ export default {
     async fetchFormFields({ commit, dispatch }, { formId, formVersionId }) {
       try {
         commit('SET_FORM_FIELDS', []);
-        const { data } = await formService.readVersionFields(formId, formVersionId);
+        const { data } = await formService.readVersionFields(
+          formId,
+          formVersionId
+        );
         commit('SET_FORM_FIELDS', data);
       } catch (error) {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while fetching the list of fields for this form.',
+            message:
+              'An error occurred while fetching the list of fields for this form.',
             consoleError: `Error getting form ${formId}: ${error}`,
           },
           { root: true }
@@ -374,7 +407,9 @@ export default {
         dispatch(
           'notifications/addNotification',
           {
-            message: `An error occurred while ${publish ? 'publishing' : 'unpublishing'}.`,
+            message: `An error occurred while ${
+              publish ? 'publishing' : 'unpublishing'
+            }.`,
             consoleError: `Error in toggleVersionPublish ${versionId} ${publish}: ${error}`,
           },
           { root: true }
@@ -387,7 +422,9 @@ export default {
     async updateForm({ state, dispatch }) {
       try {
         const emailList =
-          state.form.sendSubRecieviedEmail && state.form.submissionReceivedEmails && Array.isArray(state.form.submissionReceivedEmails)
+          state.form.sendSubRecieviedEmail &&
+          state.form.submissionReceivedEmails &&
+          Array.isArray(state.form.submissionReceivedEmails)
             ? state.form.submissionReceivedEmails
             : [];
 
@@ -408,14 +445,19 @@ export default {
           submissionReceivedEmails: emailList,
           schedule: schedule,
           allowSubmitterToUploadFile: state.form.allowSubmitterToUploadFile,
-          reminder_enabled: state.form.reminder_enabled ? state.form.reminder_enabled : false,
-          enableCopyExistingSubmission: state.form.enableCopyExistingSubmission ? state.form.enableCopyExistingSubmission : false,
+          reminder_enabled: state.form.reminder_enabled
+            ? state.form.reminder_enabled
+            : false,
+          enableCopyExistingSubmission: state.form.enableCopyExistingSubmission
+            ? state.form.enableCopyExistingSubmission
+            : false,
         });
       } catch (error) {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while updating the settings for this form.',
+            message:
+              'An error occurred while updating the settings for this form.',
             consoleError: `Error updating form ${state.form.id}: ${error}`,
           },
           { root: true }
@@ -467,7 +509,8 @@ export default {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while deleting the selected submissions.',
+            message:
+              'An error occurred while deleting the selected submissions.',
             consoleError: `Error deleteing submissions: ${error}`,
           },
           { root: true }
@@ -535,7 +578,8 @@ export default {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while fetching the recipient email for this submission.',
+            message:
+              'An error occurred while fetching the recipient email for this submission.',
             consoleError: `Error getting recipient email for submission ${formSubmissionId}: ${error}`,
           },
           { root: true }
@@ -559,11 +603,43 @@ export default {
         );
       }
     },
-    async fetchSubmissions({ commit, dispatch, state }, { formId, userView, deletedOnly = false, createdBy = '', createdAt }) {
+    async fetchFormCSVExportFields(
+      { commit, dispatch },
+      { formId, type, draft, deleted, version }
+    ) {
+      try {
+        commit('SET_FORM_FIELDS', []);
+        const { data } = await formService.readCSVExportFields(
+          formId,
+          type,
+          draft,
+          deleted,
+          version
+        );
+        commit('SET_FORM_FIELDS', data);
+      } catch (error) {
+        dispatch(
+          'notifications/addNotification',
+          {
+            message:
+              'An error occurred while fetching the list of fields for this form.',
+            consoleError: `Error getting form ${formId}: ${error}`,
+          },
+          { root: true }
+        );
+      }
+    },
+    async fetchSubmissions(
+      { commit, dispatch, state },
+      { formId, userView, deletedOnly = false, createdBy = '', createdAt }
+    ) {
       try {
         commit('SET_SUBMISSIONLIST', []);
         // Get list of active submissions for this form (for either all submissions, or just single user)
-        const fields = state.userFormPreferences && state.userFormPreferences.preferences ? state.userFormPreferences.preferences.columns : undefined;
+        const fields =
+          state.userFormPreferences && state.userFormPreferences.preferences
+            ? state.userFormPreferences.preferences.columns
+            : undefined;
         const response = userView
           ? await rbacService.getUserSubmissions({ formId: formId })
           : await formService.listSubmissions(formId, {
@@ -577,7 +653,8 @@ export default {
         dispatch(
           'notifications/addNotification',
           {
-            message: 'An error occurred while fetching submissions for this form.',
+            message:
+              'An error occurred while fetching submissions for this form.',
             consoleError: `Error getting submissions for ${formId}: ${error}`,
           },
           { root: true }
@@ -680,7 +757,9 @@ export default {
         if (response) {
           commit('SET_FCPROACTIVEHELPIMAGEURL', response.data.url);
         } else {
-          const response = await formService.getFCProactiveHelpImageUrl(componentId);
+          const response = await formService.getFCProactiveHelpImageUrl(
+            componentId
+          );
           state.imageList.set(componentId, response);
           commit('SET_FCPROACTIVEHELPIMAGEURL', response.data.url);
         }
@@ -721,6 +800,24 @@ export default {
       if (!state.form || state.form.isDirty === isDirty) return; // don't do anything if not changing the val (or if form is blank for some reason)
       window.onbeforeunload = isDirty ? () => true : null;
       commit('SET_FORM_DIRTY', isDirty);
+    },
+    async downloadFile({ commit, dispatch }, fileId) {
+      try {
+        commit('SET_DOWNLOADEDFILE_DATA', null);
+        commit('SET_DOWNLOADEDFILE_HEADERS', null);
+        const response = await fileService.getFile(fileId);
+        commit('SET_DOWNLOADEDFILE_DATA', response.data);
+        commit('SET_DOWNLOADEDFILE_HEADERS', response.headers);
+      } catch (error) {
+        dispatch(
+          'notifications/addNotification',
+          {
+            message: 'An error occurred while downloading file',
+            consoleError: 'Error downloading file',
+          },
+          { root: true }
+        );
+      }
     },
   },
 };
